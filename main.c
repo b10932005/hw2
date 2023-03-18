@@ -33,12 +33,12 @@ int main(int argc, char *argv[]) {
 
 	// read header
 	header *meta = (header *)malloc(sizeof(header));
-	fread(meta, 1, sizeof(header), infile);
+	fread(meta, sizeof(header), 1, infile);
 
 	// skip to data
 	char read[3], state = 0; // two bytes at a time
 	for (size_t i = 0; i < meta->chunk_size - 36; i++) {
-		fread(read, 1, 2 * sizeof(char), infile);
+		fread(read, 2 * sizeof(char), 1, infile);
 		switch (state) {
 		case 0:
 			if (strcmp(read, "da") == 0)
@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
 exit:
 	// get data size
 	int data_size;
-	fread(&data_size, 1, sizeof(int), infile);
+	fread(&data_size, sizeof(int), 1, infile);
 
 	// print header info
 	printf("chunk_id: \t\t%c%c%c%c\n", meta->chunk_id[0], meta->chunk_id[1], meta->chunk_id[2], meta->chunk_id[3]);
@@ -68,9 +68,11 @@ exit:
 	printf("byte_rate: \t\t%d\n", meta->byte_rate);
 	printf("block_align: \t\t%d\n", meta->block_align);
 	printf("bits_per_sample: \t%d\n", meta->bits_per_sample);
+	printf("data_size: \t\t%d\n", data_size);
 
 	// write header
-	int len = ftell(infile) + 4;
+	int len = ftell(infile);
+	printf("header size: \t\t%d\n", len);
 	char *buffer = (char *)malloc(sizeof(char) * len); // copy until byte count len
 	rewind(infile);
 	fread(buffer, 1, len, infile);
