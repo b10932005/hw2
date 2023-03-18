@@ -8,12 +8,12 @@ typedef struct header_file {
 	char format[4];
 	char sub_chunk1_id[4];
 	int sub_chunk1_size;
-	short int audio_format;
-	short int num_channels;
+	short audio_format;
+	short num_channels;
 	int sample_rate;
 	int byte_rate;
-	short int block_align;
-	short int bits_per_sample;
+	short block_align;
+	short bits_per_sample;
 } header;
 
 int main(int argc, char *argv[]) {
@@ -49,6 +49,7 @@ int main(int argc, char *argv[]) {
 				goto exit;
 			else
 				state = 0;
+			break;
 		}
 	}
 exit:
@@ -80,16 +81,16 @@ exit:
 
 	// read data after
 	int num_samples = (meta->chunk_size - len) / 2;
-	short int *data = (short int *)malloc(sizeof(short int) * num_samples);
-	fread(data, sizeof(short int), num_samples, infile);
+	short *data = (short *)malloc(sizeof(short) * num_samples);
+	fread(data, sizeof(short), num_samples, infile);
 
 	// reverse data
 	for (int i = 0; i < num_samples / 2; i++) {
-		short int temp = data[i];
+		short temp = data[i];
 		data[i] = data[num_samples - i - 1];
 		data[num_samples - i - 1] = temp;
 	}
 
 	// write reversed data
-	fwrite(data, sizeof(short int), num_samples, outfile);
+	fwrite(data, sizeof(short), num_samples, outfile);
 }
