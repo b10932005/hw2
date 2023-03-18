@@ -18,18 +18,21 @@ typedef struct header_file {
 
 int main(int argc, char *argv[]) {
 	if (argc < 2) {
-		printf("No file specified\n");
-		return 1;
+		printf("Error: no file specified\n");
+		return -1;
 	}
 
 	FILE *infile = fopen(argv[1], "rb");
-
 	if (infile == NULL) {
 		perror("Error");
-		return 1;
+		return -1;
 	}
 
 	FILE *outfile = fopen("reversed.wav", "wb");
+	if (outfile == NULL) {
+		perror("Error");
+		return 1;
+	}
 
 	// read header
 	header *meta = (header *)malloc(sizeof(header));
