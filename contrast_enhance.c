@@ -1,8 +1,19 @@
+#include <math.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
 #define MAX_GRAY_LEVEL 255
+
+void arrayOutCSV(char *filename, int32_t *array, int32_t size) {
+	FILE *fp;
+	fp = fopen(filename, "w");
+	fprintf(fp, "index,value\n");
+	for (int32_t i = 0; i < size; i++) {
+		fprintf(fp, "%d,%d\n", i, array[i]);
+	}
+	fclose(fp);
+}
 
 void histogramEqualization(uint8_t *imageData, int32_t width, int32_t height) {
 	int32_t pixelCount = width * height;
@@ -14,6 +25,7 @@ void histogramEqualization(uint8_t *imageData, int32_t width, int32_t height) {
 	for (int32_t i = 0; i < pixelCount; i++) {
 		histogram[imageData[i]]++;
 	}
+	arrayOutCSV("histogram.csv", histogram, MAX_GRAY_LEVEL + 1);
 
 	// Calculate the cumulative distribution function (CDF)
 	cdf[0] = (float)histogram[0] / pixelCount;
@@ -28,8 +40,13 @@ void histogramEqualization(uint8_t *imageData, int32_t width, int32_t height) {
 
 	// Map the original gray levels to the equalized gray levels
 	for (int32_t i = 0; i < pixelCount; i++) {
-		imageData[i] = (uint8_t)equalizedHistogram[imageData[i]];
+		imageData[i] = (uint8_t)round(equalizedHistogram[imageData[i]]);
 	}
+	// Calculate the output histogram
+	for (int32_t i = 0; i < pixelCount; i++) {
+		histogram[imageData[i]]++;
+	}
+	arrayOutCSV("histogramEqualize.csv", histogram, MAX_GRAY_LEVEL + 1);
 }
 
 int main(int argc, char *argv[]) {
