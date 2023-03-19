@@ -23,13 +23,13 @@ int main(int argc, char *argv[]) {
 	}
 
 	FILE *infile = fopen(argv[1], "rb");
-	if (infile == NULL) {
+	if (!infile) {
 		perror("Error");
 		return -1;
 	}
 
 	FILE *outfile = fopen("reversed.wav", "wb");
-	if (outfile == NULL) {
+	if (!outfile) {
 		perror("Error");
 		return 1;
 	}
@@ -39,16 +39,17 @@ int main(int argc, char *argv[]) {
 	fread(meta, sizeof(header), 1, infile);
 
 	// skip to data
-	char read[3], state = 0; // two bytes at a time
+	// two bytes at a time, I don't know why short doesn't work with read==0x6164
+	char read[3], state = 0;
 	for (size_t i = 0; i < meta->chunk_size - 36; i++) {
 		fread(read, 2 * sizeof(char), 1, infile);
 		switch (state) {
 		case 0:
-			if (strcmp(read, "da") == 0)
+			if (!strcmp(read, "da"))
 				state = 1;
 			break;
 		case 1:
-			if (strcmp(read, "ta") == 0)
+			if (!strcmp(read, "ta"))
 				goto exit;
 			else
 				state = 0;

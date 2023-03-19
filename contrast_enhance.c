@@ -33,48 +33,45 @@ void histogramEqualization(uint8_t *imageData, int32_t width, int32_t height) {
 }
 
 int main(int argc, char *argv[]) {
-	if (argc < 2) {
-		printf("Error: no input file\n");
+	if (argc < 4) {
+		printf("Usage: %s <raw file> <width> <height>\n", argv[0]);
 		return -1;
 	}
 
-	// Load image data from file or other source
-	uint8_t *imageData;
+	// convert input arguments to integers, use strtol for error checking
 	int32_t width, height;
+	char *err;
+	width = (int32_t)strtol(argv[2], &err, 10);
+	if (*err) {
+		printf("Error: width is not an integer\n");
+		return -1;
+	}
+	height = (int32_t)strtol(argv[3], &err, 10);
+	if (*err) {
+		printf("Error: height is not an integer\n");
+		return -1;
+	}
 
 	FILE *inputFile = fopen(argv[1], "rb");
-	if (inputFile == NULL) {
+	if (!inputFile) {
 		perror("Error");
 		return -1;
 	}
 
-	// Read image dimensions from file header
-	fread(&width, sizeof(int32_t), 1, inputFile);
-	fread(&height, sizeof(int32_t), 1, inputFile);
+	FILE *outputFile = fopen("out.data", "wb");
+	if (!outputFile) {
+		perror("Error");
+		return -1;
+	}
 
+	// Read the image data
+	uint8_t *imageData;
 	imageData = malloc(width * height * sizeof(uint8_t));
-
 	fread(imageData, sizeof(uint8_t), width * height, inputFile);
-
 	fclose(inputFile);
 
 	// Perform histogram equalization
 	histogramEqualization(imageData, width, height);
 
-	FILE *outputFile = fopen(argv[2], "wb");
-	if (outputFile == NULL) {
-		printf("Error opening output file %s\n", argv[2]);
-		return -1;
-	}
-
-	fwrite(&width, sizeof(int32_t), 1, outputFile);
-	fwrite(&height, sizeof(int32_t), 1, outputFile);
-
 	fwrite(imageData, sizeof(uint8_t), width * height, outputFile);
-
-	fclose(outputFile);
-
-	free(imageData);
-
-	return 0;
 }
